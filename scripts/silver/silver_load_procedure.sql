@@ -103,3 +103,24 @@ when sls_price is null then abs(sls_sales*sls_quantity)
 else abs(sls_price) 
 end as sls_price
 from bronze.crm_sales_info;
+
+
+
+-- inserting transformed data in erp_cust
+truncate table silver.erp_cust;
+insert into silver.erp_cust
+select 
+case 
+when trim(cust_id) like 'NAS%' then trim(substring(cust_id,4,length(cust_id)))
+else trim(cust_id)
+end as cust_id,
+case
+when cst_bdate > now() then null
+else cst_bdate
+end as cust_bdate,
+case
+when trim(upper(cust_gender)) in ('F','FEMALE') then 'Female'
+when trim(upper(cust_gender)) in ('M','MALE') then 'Male'
+else 'NA'
+end as cust_gender
+from bronze.erp_cust;
