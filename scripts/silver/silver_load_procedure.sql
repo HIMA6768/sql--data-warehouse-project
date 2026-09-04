@@ -1,3 +1,18 @@
+create or replace procedure silver.load_silver()
+language plpgsql
+as
+$$
+DECLARE
+starttime TIMESTAMP;
+endtime TIMESTAMP;
+begin
+
+raise notice '=====================================================================';
+raise notice 'LOADING Started...';
+raise notice '=====================================================================';
+
+starttime:= clock_timestamp();
+raise notice '-------- loading crm_cust_info -----';
 
 -- inserting transformed data in customer_info
 truncate table  silver.crm_cust_info;
@@ -43,10 +58,12 @@ cust_create_date
 from rev_cust_info
 where rank=1 and cust_id is not NULL;
 
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
 
 
-
-
+starttime:= clock_timestamp();
+raise notice '--------loading crm_prd_info ----------';
 -- inserting transformed data in prd_info
 truncate table silver.crm_prd_info;
 insert into silver.crm_prd_info
@@ -80,6 +97,12 @@ cast(lead(prd_start_date)over(partition by prd_key order by prd_start_date asc )
 from bronze.crm_prd_info ;
 
 
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
+
+
+starttime:= clock_timestamp();
+raise notice '--------loading crm_sales_info ----------';
 -- inserting transformed data in sales_info
 truncate table silver.crm_sales_info;
 insert into silver.crm_sales_info
@@ -105,6 +128,13 @@ end as sls_price
 from bronze.crm_sales_info;
 
 
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
+
+
+
+starttime:= clock_timestamp();
+raise notice '--------loading erp_cust ----------';
 
 -- inserting transformed data in erp_cust
 truncate table silver.erp_cust;
@@ -126,7 +156,12 @@ end as cust_gender
 from bronze.erp_cust;
 
 
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
 
+
+starttime:= clock_timestamp();
+raise notice '--------loading erp_location ----------';
 -- inserting transfromed value in erp_location
 Truncate table silver.erp_location;
 insert into silver.erp_location
@@ -141,6 +176,14 @@ end as cust_country
 from bronze.erp_location;
 
 
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
+
+
+
+starttime:= clock_timestamp();
+raise notice '--------loading erp_px_cat ----------';
+
 -- inserting transformed data into erp_px_cat
 truncate table silver.erp_px_cat;
 insert into silver.erp_px_cat
@@ -150,3 +193,12 @@ cat,
 subcat,
 maintainanance as maintainance
 from bronze.erp_px_cat;
+
+endtime:= clock_timestamp();
+raise notice 'time taken .... %',(endtime-starttime);
+
+end
+$$
+
+
+call silver.load_silver();
