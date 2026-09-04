@@ -139,3 +139,14 @@ when trim(upper(cust_country)) in ('US','USA') then 'UNITED STATES'
 else trim(upper(cust_country))
 end as cust_country
 from bronze.erp_location;
+
+
+-- inserting transformed data into erp_px_cat
+truncate table silver.erp_px_cat;
+insert into silver.erp_px_cat
+select 
+pid,
+cat,
+subcat,
+maintainanance as maintainance
+from bronze.erp_px_cat;
