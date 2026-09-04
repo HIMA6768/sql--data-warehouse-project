@@ -79,4 +79,27 @@ cast (prd_start_date as  date ) as prd_startdate,
 cast(lead(prd_start_date)over(partition by prd_key order by prd_start_date asc )-1 as date )as end_date 
 from bronze.crm_prd_info ;
 
-select * from silver.crm_prd_info
+
+-- inserting transformed data in sales_info
+truncate table silver.crm_sales_info;
+insert into silver.crm_sales_info
+select 
+trim(sls_order_num) as sls_order_num,
+trim(sls_product_key)as sls_product_key,
+sls_cust_id,
+case
+when length(sls_order_dt)<8 then  cast(cast (cast ( sls_ship_dt as int )-1 as varchar) as date)
+else cast (sls_order_dt as date)
+end as sls_order_dt,
+cast(sls_ship_dt as date) as sls_ship_dt,
+cast(sls_due_dt as date) as sls_due_dt,
+case 
+when sls_sales <=0 or sls_sales is null  then abs(sls_price)/sls_quantity 
+else sls_sales 
+end as sls_sales,
+sls_quantity,
+case 
+when sls_price is null then abs(sls_sales*sls_quantity)
+else abs(sls_price) 
+end as sls_price
+from bronze.crm_sales_info;
