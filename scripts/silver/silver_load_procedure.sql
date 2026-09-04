@@ -124,3 +124,18 @@ when trim(upper(cust_gender)) in ('M','MALE') then 'Male'
 else 'NA'
 end as cust_gender
 from bronze.erp_cust;
+
+
+
+-- inserting transfromed value in erp_location
+Truncate table silver.erp_location;
+insert into silver.erp_location
+select 
+replace(cust_id,'-','') as cust_id,
+case 
+when trim(cust_country) ='' or  trim(cust_country) is null  then 'NA'
+when trim(upper(cust_country))='DE' then 'GERMANY'
+when trim(upper(cust_country)) in ('US','USA') then 'UNITED STATES'
+else trim(upper(cust_country))
+end as cust_country
+from bronze.erp_location;
