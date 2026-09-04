@@ -42,3 +42,41 @@ cust_create_date
 
 from rev_cust_info
 where rank=1 and cust_id is not NULL;
+
+
+
+
+
+-- inserting transformed data in prd_info
+truncate table silver.crm_prd_info;
+insert into silver.crm_prd_info
+(prd_id ,
+prd_key,
+cat_key ,
+sls_prd_key ,
+prd_name ,
+prd_price ,
+prd_line ,
+prd_start_date ,
+prd_end_date
+)
+select prd_id,
+trim(prd_key) as prd_key,
+replace(substring (prd_key,1,5),'-','_') as cat_key,
+substring(prd_key,7,length(prd_key)) as sls_prd_key,
+
+trim(prd_name) as prd_name,
+coalesce(prd_price,0) as prd_price,
+case
+when trim(upper(prd_line))='M' then'Mountain'
+when trim(upper(prd_line))='R' then'Road'
+when trim(upper(prd_line))='T' then'Tourism'
+when trim(upper(prd_line))='S' then'Sales others'
+else 'NA'
+ end as prd_line,
+
+cast (prd_start_date as  date ) as prd_startdate,
+cast(lead(prd_start_date)over(partition by prd_key order by prd_start_date asc )-1 as date )as end_date 
+from bronze.crm_prd_info ;
+
+select * from silver.crm_prd_info
