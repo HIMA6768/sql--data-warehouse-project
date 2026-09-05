@@ -1,0 +1,16 @@
+create view gold.fact_sales as
+select
+s.sls_order_num as orderno,
+c.customer_key as customer_key,
+p.product_key as product_key,
+s.sls_order_dt as order_date,
+s.sls_ship_dt as ship_date,
+s.sls_due_dt  as due_date,
+s.sls_quantity as quantity,
+s.sls_price as price,
+s.sls_sales as amount
+from silver.crm_sales_info s
+left join gold.dim_customer c
+on s.sls_cust_id=c.customer_id
+left join gold.dim_product p
+on s.sls_product_key=p.product_no
